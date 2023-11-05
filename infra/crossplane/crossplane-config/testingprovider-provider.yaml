@@ -1,0 +1,28 @@
+
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: "testingprovider-vault-config"
+spec:
+  args:
+    - --debug
+  metadata:
+    annotations:
+      vault.hashicorp.com/agent-inject: "true"
+      vault.hashicorp.com/role: "crossplane-providers"
+      vault.hashicorp.com/agent-inject-secret-creds.txt: "generic/CloudProvider/15840e8d-d16e-4225-ad37-cf35834b925d"
+      vault.hashicorp.com/agent-inject-template-creds.txt: |
+        {{- with secret "generic/CloudProvider/15840e8d-d16e-4225-ad37-cf35834b925d" -}}
+          [default]
+          aws_access_key_id="{{ .access_key }}"
+          aws_secret_access_key="{{ .secret_key }}"
+        {{- end -}}
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-testingprovider
+spec:
+  package: "xpkg.upbound.io/crossplane-contrib/provider-aws:v0.33.0"
+  controllerConfigRef:
+    name: "testingprovider-vault-config"
